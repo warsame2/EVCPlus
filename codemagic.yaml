@@ -3,35 +3,18 @@ workflows:
     name: Build Xamarin App
     max_build_duration: 60
     environment:
-      vars:
-        BUILD_CONFIGURATION: "Release"
+      docker: 
+        image: mono:latest  # صورة Docker تحتوي على Mono مثبتًا
     scripts:
-      - name: Install Mono
-        script: |
-          sudo apt update
-          sudo apt install -y gnupg ca-certificates
-          sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
-          echo "deb https://download.mono-project.com/repo/ubuntu stable-focal main" | sudo tee /etc/apt/sources.list.d/mono-official-stable.list
-          sudo apt update
-          sudo apt install -y mono-complete
-      - name: Install .NET SDK
-        script: |
-          wget https://dotnet.microsoft.com/download/dotnet/scripts/v1/dotnet-install.sh
-          chmod +x dotnet-install.sh
-          ./dotnet-install.sh --channel 6.0
-      - name: Install Android SDK
-        script: |
-          yes | sdkmanager --licenses
-          sdkmanager "platforms;android-33" "build-tools;33.0.0"
       - name: Restore dependencies
         script: |
           nuget restore MyApp.sln
       - name: Build Android App
         script: |
-          msbuild MyApp.Android/MyApp.Android.csproj /t:Clean /t:Build /p:Configuration=$BUILD_CONFIGURATION
+          msbuild MyApp.Android/MyApp.Android.csproj /t:Clean /t:Build /p:Configuration=Release
       - name: Build iOS App
         script: |
-          msbuild MyApp.iOS/MyApp.iOS.csproj /t:Clean /t:Build /p:Configuration=$BUILD_CONFIGURATION
+          msbuild MyApp.iOS/MyApp.iOS.csproj /t:Clean /t:Build /p:Configuration=Release
     artifacts:
       - MyApp.Android/bin/Release/*.apk
       - MyApp.iOS/bin/iPhone/Release/*.ipa
