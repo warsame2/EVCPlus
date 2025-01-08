@@ -1,0 +1,21 @@
+workflows:
+  xamarin-workflow:
+    name: Build Xamarin App
+    max_build_duration: 60
+    environment:
+      mono: latest  # Mono required for Xamarin/.NET
+      android: latest
+      xcode: latest
+    scripts:
+      - name: Install dependencies
+        script: |
+          nuget restore MyApp.sln
+      - name: Build Android App
+        script: |
+          msbuild MyApp.Android/MyApp.Android.csproj /t:Clean /t:Build /p:Configuration=Release
+      - name: Build iOS App
+        script: |
+          msbuild MyApp.iOS/MyApp.iOS.csproj /t:Clean /t:Build /p:Configuration=Release
+    artifacts:
+      - MyApp.Android/bin/Release/*.apk
+      - MyApp.iOS/bin/iPhone/Release/*.ipa
