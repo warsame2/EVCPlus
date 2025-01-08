@@ -3,19 +3,31 @@ workflows:
     name: Build Xamarin App
     max_build_duration: 60
     environment:
-      mono: latest  # Mono required for Xamarin/.NET
-      android: latest
-      xcode: latest
+      vars:
+        BUILD_CONFIGURATION: "Release"  # يمكنك تحديد إعدادات البناء هنا
     scripts:
-      - name: Install dependencies
+      - name: Install Mono
+        script: |
+          sudo apt update
+          sudo apt install -y mono-complete
+      - name: Install .NET SDK
+        script: |
+          wget https://dotnet.microsoft.com/download/dotnet/scripts/v1/dotnet-install.sh
+          chmod +x dotnet-install.sh
+          ./dotnet-install.sh --channel 6.0
+      - name: Install Android SDK
+        script: |
+          yes | sdkmanager --licenses
+          sdkmanager "platforms;android-33" "build-tools;33.0.0"
+      - name: Restore dependencies
         script: |
           nuget restore MyApp.sln
       - name: Build Android App
         script: |
-          msbuild MyApp.Android/MyApp.Android.csproj /t:Clean /t:Build /p:Configuration=Release
+          msbuild MyApp.Android/MyApp.Android.csproj /t:Clean /t:Build /p:Configuration=$BUILD_CONFIGURATION
       - name: Build iOS App
         script: |
-          msbuild MyApp.iOS/MyApp.iOS.csproj /t:Clean /t:Build /p:Configuration=Release
+          msbuild MyApp.iOS/MyApp.iOS.csproj /t:Clean /t:Build /p:Configuration=$BUILD_CONFIGURATION
     artifacts:
       - MyApp.Android/bin/Release/*.apk
       - MyApp.iOS/bin/iPhone/Release/*.ipa
